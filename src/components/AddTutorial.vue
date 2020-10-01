@@ -29,56 +29,52 @@
 
     <div v-else>
       <h4>You submitted successfully!</h4>
-      <button class="btn btn-success" @click="newTutorial">Add</button>
+      <button class="btn btn-success" @click="addNewTutorial">Add</button>
     </div>
   </div>
 </template>
 
 <script>
+import { reactive, toRefs } from "vue"
 import TutorialDataService from "../services/TutorialDataService"
 
 export default {
   name: "add-tutorial",
 
-  data() {
-    return {
+  setup () {
+    const newTutorial = reactive({
       tutorial: {
         id: null,
         title: "",
         description: "",
         published: false,
       },
-      submitted: false,
-    }
-  },
+      submitted: false
+    })
 
-  methods: {
-    saveTutorial() {
+    function saveTutorial() {
       const data = {
-        title: this.tutorial.title,
-        description: this.tutorial.description,
+        title: newTutorial.tutorial.title,
+        description: newTutorial.tutorial.description,
       }
 
       TutorialDataService.create(data)
         .then((response) => {
-          this.tutorial.id = response.data.id
+          newTutorial.tutorial.id = response.data.id
           console.log(response.data)
-          this.submitted = true
+          newTutorial.submitted = true
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    newTutorial() {
-      this.submitted = false
-      this.tutorial = {}
-    },
-  },
+    function addNewTutorial() {
+      newTutorial.submitted = false
+      newTutorial.tutorial = {}
+    }
+
+    return { ...toRefs(newTutorial), saveTutorial, addNewTutorial }
+  }
 }
 </script>
-
-<style lang="scss" scoped>
-.submit-form {
-}
-</style>

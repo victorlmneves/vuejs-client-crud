@@ -68,69 +68,70 @@
 </template>
 
 <script>
+import { reactive, onMounted, toRefs } from "vue"
 import TutorialDataService from "../services/TutorialDataService"
 
 export default {
   name: "tutorials-list",
 
-  data() {
-    return {
+  setup () {
+    const data = reactive({
       tutorials: [],
       currentTutorial: null,
       currentIndex: -1,
       title: "",
-    }
-  },
+    })
 
-  methods: {
-    retrieveTutorials() {
+    function retrieveTutorials() {
       TutorialDataService.getAll()
         .then((response) => {
-          this.tutorials = response.data
+          data.tutorials = response.data
           console.log(response.data)
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    refreshList() {
-      this.retrieveTutorials()
-      this.currentTutorial = null
-      this.currentIndex = -1
-    },
+    function refreshList() {
+      retrieveTutorials()
+      data.currentTutorial = null
+      data.currentIndex = -1
+    }
 
-    setActiveTutorial(tutorial, index) {
-      this.currentTutorial = tutorial
-      this.currentIndex = index
-    },
+    function setActiveTutorial(tutorial, index) {
+      data.currentTutorial = tutorial
+      data.currentIndex = index
+    }
 
-    removeAllTutorials() {
+    function removeAllTutorials() {
       TutorialDataService.deleteAll()
         .then((response) => {
           console.log(response.data)
-          this.refreshList()
+          refreshList()
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    searchTitle() {
+    function searchTitle() {
       TutorialDataService.findByTitle(this.title)
         .then((response) => {
-          this.tutorials = response.data
+          data.tutorials = response.data
           console.log(response.data)
         })
         .catch((e) => {
           console.log(e)
         })
-    },
-  },
+    }
 
-  mounted() {
-    this.retrieveTutorials()
-  },
+    onMounted(() => {
+      retrieveTutorials()
+    })
+
+    return { ...toRefs(data), retrieveTutorials, refreshList, setActiveTutorial, removeAllTutorials, searchTitle }
+  }
 }
 </script>
 

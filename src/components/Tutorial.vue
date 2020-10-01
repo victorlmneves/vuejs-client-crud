@@ -1,4 +1,5 @@
 <template>
+  {{currentTutorial}} | iskdhjksjd
   <div v-if="currentTutorial" class="edit-form">
     <h4>Tutorial</h4>
     <form>
@@ -59,80 +60,82 @@
 </template>
 
 <script>
-import TutorialDataService from "../services/TutorialDataService"
+import router from '@/router'
+import { reactive, onMounted, toRefs } from "vue"
+import TutorialDataService from "@/services/TutorialDataService"
 
 export default {
   name: "tutorial",
 
-  data() {
-    return {
+  setup () {
+    const { currentRoute } = router
+    // console.log('currentRoute ', currentRoute.value.params.id)
+    // let currentTutorial = ref(currentRoute.value.params.id)
+    // let message = ref('')
+
+    const tutorial = reactive({
       currentTutorial: null,
       message: "",
-    }
-  },
+    })
 
-  methods: {
-    getTutorial(id) {
+    function getTutorial(id) {
+      console.log('========= ', id)
       TutorialDataService.get(id)
         .then((response) => {
-          this.currentTutorial = response.data
-          console.log(response.data)
+          tutorial.currentTutorial = response.data
+          console.log(tutorial.currentTutorial)
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    updatePublished(status) {
+    function updatePublished() {
       const data = {
-        id: this.currentTutorial.id,
-        title: this.currentTutorial.title,
-        description: this.currentTutorial.description,
+        id: tutorial.currentTutorial.id,
+        title: tutorial.currentTutorial.title,
+        description: tutorial.currentTutorial.description,
         published: status,
       }
 
-      TutorialDataService.update(this.currentTutorial.id, data)
+      TutorialDataService.update(tutorial.currentTutorial.id, data)
         .then((response) => {
-          this.currentTutorial.published = status
+          tutorial.currentTutorial.published = status
           console.log(response.data)
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    updateTutorial() {
-      TutorialDataService.update(this.currentTutorial.id, this.currentTutorial)
+    function updateTutorial() {
+      TutorialDataService.update(tutorial.currentTutorial.id, tutorial.currentTutorial)
         .then((response) => {
           console.log(response.data)
-          this.message = "The tutorial was updated successfully!"
+          tutorial.message = "The tutorial was updated successfully!"
         })
         .catch((e) => {
           console.log(e)
         })
-    },
+    }
 
-    deleteTutorial() {
-      TutorialDataService.delete(this.currentTutorial.id)
+    function deleteTutorial() {
+      TutorialDataService.delete(tutorial.currentTutorial.id)
         .then((response) => {
           console.log(response.data)
-          this.$router.push({ name: "tutorials" })
+          //$router.push({ name: "tutorials" })
         })
         .catch((e) => {
           console.log(e)
         })
-    },
-  },
+    }
 
-  mounted() {
-    this.message = ""
-    this.getTutorial(this.$route.params.id)
-  },
+    onMounted(() => {
+      tutorial.message = ""
+      getTutorial(currentRoute.value.params.id)
+    })
+
+    return { ...toRefs(tutorial), getTutorial, updatePublished, updateTutorial, deleteTutorial }
+  }
 }
 </script>
-
-<style lang="scss" scope>
-.edit-form {
-
-}
-</style>
